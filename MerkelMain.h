@@ -23,7 +23,11 @@ private:
   void processUserOption(int userOption);
 
   std::string currentTime;
-  OrderBook orderBook{"data.csv"};
+  OrderBook * orderBook;
 
   Wallet wallet;
+
+    void getProductFilter(const std::string& product_name, const std::string& time_stamp, const std::string& order_type);
+
+    void printAllProducts(std::vector<OrderBookEntry> entries);
 };

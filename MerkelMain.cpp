@@ -7,13 +7,16 @@
 
 MerkelMain::MerkelMain()
 {
+    std::cout<<"MerkelMain -- Default Constructor "<<std::endl;
+    orderBook = new OrderBook("E:\\c-workspace\\currency-exchange-simulator\\20200601.csv");
 }
 
 void MerkelMain::init()
 {
   int input;
-  currentTime = orderBook.getEarliestTime();
-
+  std::cout<<"MerkelMain -- init() "<<std::endl;
+  currentTime = orderBook->getEarliestTime();
+  std::cout<<"MerkelMain -- After get Earliest Time "<<std::endl;
   wallet.insertCurrency("BTC", 10);
 
   while (true)
@@ -39,8 +42,10 @@ void MerkelMain::printMenu()
   // 6 continue
   std::cout << "6: continue " << std::endl;
 
+  std::cout << "7: Product Filter " << std::endl;
+
   std::cout << "============== " << std::endl;
-  std::cout << "Type in 1-6" << std::endl;
+  std::cout << "Type in 1-7" << std::endl;
 
   std::cout << "Current time is " << currentTime << std::endl;
 }
@@ -68,20 +73,53 @@ void MerkelMain::printHelp()
 {
   std::cout << "Help - your aim is to make money. Analyse the market and make bids and offers" << std::endl;
 }
+
+void MerkelMain :: printAllProducts(std::vector<OrderBookEntry> entries){
+
+    std::cout << "Time Stamp\t\t\t Product\t Type\t Price\t\t Amount" << std::endl;
+    for (OrderBookEntry &p : entries)
+    {
+        std::cout <<p.timestamp<<"\t"<<p.product<<"\t\t"<<"ASK"<<"\t"<<p.price<<"\t"<<p.amount << std::endl;
+    }
+}
 void MerkelMain::printMarketStats()
 {
 
-  for (std::string const &p : orderBook.getKnownProducts())
+  for (std::string const &p : orderBook->getKnownProducts())
   {
     std::cout << "Product: " << p << std::endl;
-    std::vector<OrderBookEntry> entries = orderBook.getOrders(OrderBookType::ask,
+    std::vector<OrderBookEntry> entries = orderBook->getOrders(OrderBookType::ask,
                                                               p, currentTime);
     std::cout << "Asks seen: " << entries.size() << std::endl;
     std::cout << "Max ask: " << OrderBook::getHighPrice(entries) << std::endl;
     std::cout << "Min ask: " << OrderBook::getLowPrice(entries) << std::endl;
   }
-};
 
+
+  for (std::string const &p : orderBook->getKnownProducts())
+  {
+    std::cout << "Product: " << p << std::endl;
+    std::vector<OrderBookEntry> entries = orderBook->getOrders(OrderBookType::ask,
+                                                              p, currentTime);
+    std::cout << "Asks seen: " << entries.size() << std::endl;
+    std::cout << "Max ask: " << OrderBook::getHighPrice(entries) << std::endl;
+    std::cout << "Min ask: " << OrderBook::getLowPrice(entries) << std::endl;
+  }
+
+};
+void MerkelMain::getProductFilter(const std::string& product_name, const std::string& time_stamp, const std::string& order_type)
+{
+    std::vector<OrderBookEntry> entries;
+    if(order_type=="ASK"){
+        entries =  orderBook->getOrders(OrderBookType::ask,
+                                                                    product_name,time_stamp);
+    }else{
+        entries =  orderBook->getOrders(OrderBookType::bid,
+                                                                   product_name,time_stamp);
+    }
+    printAllProducts(entries);
+
+}
 void MerkelMain::enterAsk()
 {
   std::cout << "Make an ask - enter the amount: product,price,amount, eg: ETH/BTC,200,0.5" << std::endl;
@@ -109,7 +147,7 @@ void MerkelMain::enterAsk()
       if (wallet.canFulfillOrder(obe))
       {
         std::cout << "Wallet looks good. " << std::endl;
-        orderBook.insertOrder(obe);
+        orderBook->insertOrder(obe);
       }
       else
       {
@@ -150,7 +188,7 @@ void MerkelMain::enterBid()
       if (wallet.canFulfillOrder(obe))
       {
         std::cout << "Wallet looks good. " << std::endl;
-        orderBook.insertOrder(obe);
+        orderBook->insertOrder(obe);
       }
       else
       {
@@ -172,7 +210,7 @@ void MerkelMain::printWallet()
 void MerkelMain::goToNextTimeFrame()
 {
   std::cout << "Going to next time frame" << std::endl;
-  std::vector<OrderBookEntry> sales = orderBook.matchAsksToBids("ETH/BTC", currentTime);
+  std::vector<OrderBookEntry> sales = orderBook->matchAsksToBids("ETH/BTC", currentTime);
   std::cout << "Sales: " << sales.size() << std::endl;
   for (OrderBookEntry &sale : sales)
   {
@@ -183,7 +221,7 @@ void MerkelMain::goToNextTimeFrame()
       wallet.processSale(sale);
     }
   }
-  currentTime = orderBook.getNextTime(currentTime);
+  currentTime = orderBook->getNextTime(currentTime);
 }
 
 void MerkelMain::processUserOption(int userOption)
@@ -215,5 +253,9 @@ void MerkelMain::processUserOption(int userOption)
   if (userOption == 6) // bad input
   {
     goToNextTimeFrame();
+  }
+  if (userOption == 7) // bad input
+  {
+      getProductFilter("ETH/BTC","2020/06/01 11:57:30.328127","ASK");
   }
 }

@@ -2,10 +2,12 @@
 #include "CSVReader.h"
 #include <map>
 #include <algorithm>
+#include <iostream>
 
 /** construct, reading a csv data file */
 OrderBook::OrderBook(std::string filename)
 {
+  std::cout<<"OrderBook -- Overloaded constructor "<<std::endl;
   orders = CSVReader::readCSV(filename);
 };
 /** return vector of all known products in the dataset */
